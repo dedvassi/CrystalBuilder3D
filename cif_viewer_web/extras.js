@@ -2,6 +2,16 @@
 // UI extensions kept separate from the renderer core.
 const tooltip = document.querySelector('#tooltip');
 Object.assign(tooltip.style,{position:'absolute',zIndex:5,padding:'7px 9px',background:'#111e',border:'1px solid #666',borderRadius:'4px',color:'#fff',fontSize:'12px',whiteSpace:'pre-line',pointerEvents:'none'});
+const renderer = draw;
+draw = function(){if(S?.atoms?.length)ui.empty.hidden=true;renderer()};
+const copyCells=()=>[...S.cells.values()].map(cell=>[...cell]);
+const applyCells=cells=>{S.cells=new Map(cells.map(cell=>[K(cell),cell]));rebuild()};
+const remember=()=>{S.history??=[];S.future??=[];S.history.push(copyCells());S.future=[]};
+document.querySelector('#undo').onclick=()=>{if(!S?.history?.length)return;S.future??=[];S.future.push(copyCells());applyCells(S.history.pop());ui.status.textContent='Отменено последнее изменение ячеек'};
+document.querySelector('#redo').onclick=()=>{if(!S?.future?.length)return;S.history??=[];S.history.push(copyCells());applyCells(S.future.pop());ui.status.textContent='Возвращено следующее изменение ячеек'};
+let beforeClick=null;
+can.addEventListener('pointerdown',()=>{if(S)beforeClick=copyCells()},true);
+can.addEventListener('pointerup',()=>{if(!S||!beforeClick)return;const changed=JSON.stringify(beforeClick)!==JSON.stringify(copyCells());if(changed){S.history??=[];S.future=[];S.history.push(beforeClick)}beforeClick=null});
 const basePanels = panels;
 const elementPalette=['#e76f51','#457b9d','#2a9d8f','#e9c46a','#9b5de5','#f15bb5','#00bbf9','#70e000','#fb8500','#8ecae6'];
 panels = function(){
@@ -28,6 +38,7 @@ can.addEventListener('pointermove',event=>{
 });
 document.querySelector('#grow').onclick=async()=>{
   if(!S)return; const button=document.querySelector('#grow'); const steps=Math.max(1,Math.min(30,+document.querySelector('#growth-steps').value||1));
+  remember();
   button.disabled=true;
   for(let i=0;i<steps;i++){
     const available=faces(); if(!available.length)break;
