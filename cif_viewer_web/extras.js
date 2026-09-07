@@ -3,17 +3,22 @@
 const tooltip = document.querySelector('#tooltip');
 Object.assign(tooltip.style,{position:'absolute',zIndex:5,padding:'7px 9px',background:'#111e',border:'1px solid #666',borderRadius:'4px',color:'#fff',fontSize:'12px',whiteSpace:'pre-line',pointerEvents:'none'});
 const basePanels = panels;
+const elementPalette=['#e76f51','#457b9d','#2a9d8f','#e9c46a','#9b5de5','#f15bb5','#00bbf9','#70e000','#fb8500','#8ecae6'];
 panels = function(){
   basePanels(); if(!S)return;
-  for(const row of document.querySelectorAll('#radii .r')){
-    const element=row.querySelector('label').textContent; const old=row.querySelector('input[type=range]'); const output=row.querySelector('output');
-    S.radiusPercent ??= {};
+  S.radiusPercent ??= {}; S.elementColors ??= {};
+  for(const [index,row] of [...document.querySelectorAll('#radii .r')].entries()){
+    const element=row.querySelector('label').textContent.trim(); const old=row.querySelector('input[type=range]'); const output=row.querySelector('output');
+    row.dataset.element=element;
+    if(!S.elementColors[element]) S.elementColors[element]=C[element] || elementPalette[index % elementPalette.length];
+    C[element]=S.elementColors[element];
     const percent=S.radiusPercent[element] ?? 100;
     S.radiusPercent[element]=percent;
     S.mul[element]=percent / 100 * 12;
     old.min=20; old.max=100; old.step=1; old.value=percent; output.value=percent+'%';
     old.oninput=()=>{S.radiusPercent[element]=+old.value;S.mul[element]=+old.value/100*12;output.value=old.value+'%';draw()};
-    const color=document.createElement('input'); color.type='color'; color.value=cl(element); color.oninput=()=>{C[element]=color.value;draw()}; row.prepend(color);
+    const color=document.createElement('input'); color.type='color'; color.value=S.elementColors[element]; color.dataset.element=element;
+    color.oninput=event=>{const key=event.currentTarget.dataset.element;S.elementColors[key]=event.currentTarget.value;C[key]=event.currentTarget.value;draw()}; row.prepend(color);
   }
 };
 can.addEventListener('pointermove',event=>{
