@@ -18,8 +18,14 @@ can.addEventListener('pointermove',event=>{
   for(const atom of S.atoms){const p=pr(atom.p),radius=Math.max(5,ra(atom.e)*(S.mul[atom.e]||1)*cam.z/35),d=Math.hypot(event.offsetX-p[0],event.offsetY-p[1]);if(d<=radius&&(!closest||d<closest.d))closest={atom,p,d}}
   if(!closest){tooltip.hidden=true;return} tooltip.hidden=false;tooltip.style.left=(event.offsetX+14)+'px';tooltip.style.top=(event.offsetY+14)+'px';const p=closest.atom.p;tooltip.textContent=`${closest.atom.e}\nx: ${p[0].toFixed(4)} Å\ny: ${p[1].toFixed(4)} Å\nz: ${p[2].toFixed(4)} Å`;
 });
-document.querySelector('#grow').onclick=()=>{
-  if(!S)return;const steps=Math.max(1,Math.min(30,+document.querySelector('#growth-steps').value||1));
-  for(let i=0;i<steps;i++){const available=faces();if(!available.length)break;const face=available[Math.floor(Math.random()*available.length)],next=ad(face.c,face.n);S.cells.set(K(next),next)}
-  rebuild(); ui.status.textContent=`Случайный рост: ${steps} шагов`;
+document.querySelector('#grow').onclick=async()=>{
+  if(!S)return; const button=document.querySelector('#grow'); const steps=Math.max(1,Math.min(30,+document.querySelector('#growth-steps').value||1));
+  button.disabled=true;
+  for(let i=0;i<steps;i++){
+    const available=faces(); if(!available.length)break;
+    const face=available[Math.floor(Math.random()*available.length)],next=ad(face.c,face.n); S.cells.set(K(next),next);
+    rebuild(); ui.status.textContent=`Рост кристалла: ${i+1} / ${steps}`;
+    await new Promise(resolve=>setTimeout(resolve,180));
+  }
+  button.disabled=false; ui.status.textContent=`Случайный рост завершён: ${steps} шагов`;
 };
