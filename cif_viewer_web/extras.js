@@ -7,9 +7,12 @@ panels = function(){
   basePanels(); if(!S)return;
   for(const row of document.querySelectorAll('#radii .r')){
     const element=row.querySelector('label').textContent; const old=row.querySelector('input[type=range]'); const output=row.querySelector('output');
-    const percent=Math.round((S.mul[element] ?? 1)*100);
+    S.radiusPercent ??= {};
+    const percent=S.radiusPercent[element] ?? 100;
+    S.radiusPercent[element]=percent;
+    S.mul[element]=percent / 100 * 12;
     old.min=20; old.max=100; old.step=1; old.value=percent; output.value=percent+'%';
-    old.oninput=()=>{S.mul[element]=+old.value/100;output.value=old.value+'%';draw()};
+    old.oninput=()=>{S.radiusPercent[element]=+old.value;S.mul[element]=+old.value/100*12;output.value=old.value+'%';draw()};
     const color=document.createElement('input'); color.type='color'; color.value=cl(element); color.oninput=()=>{C[element]=color.value;draw()}; row.prepend(color);
   }
 };
@@ -25,7 +28,7 @@ document.querySelector('#grow').onclick=async()=>{
     const available=faces(); if(!available.length)break;
     const face=available[Math.floor(Math.random()*available.length)],next=ad(face.c,face.n); S.cells.set(K(next),next);
     rebuild(); ui.status.textContent=`Рост кристалла: ${i+1} / ${steps}`;
-    await new Promise(resolve=>setTimeout(resolve,180));
+    await new Promise(resolve=>setTimeout(resolve,400));
   }
   button.disabled=false; ui.status.textContent=`Случайный рост завершён: ${steps} шагов`;
 };
