@@ -13,7 +13,7 @@ panels = function(){
   for(const row of document.querySelectorAll('#radii .r')){
     const element=row.querySelector('label').textContent; const old=row.querySelector('input[type=range]'); const output=row.querySelector('output');
     const radius=S.pixelRadii[element] ?? 45; S.pixelRadii[element]=radius;
-    old.min=20; old.max=100; old.step=1; old.value=radius; output.value=radius;
+    old.min=1; old.max=100; old.step=1; old.value=radius; output.value=radius;
     old.oninput=()=>{S.pixelRadii[element]=+old.value;output.value=old.value;draw()};
     const color=document.createElement('input'); color.type='color'; color.value=cl(element); color.oninput=()=>{C[element]=color.value;draw()}; row.prepend(color);
   }
